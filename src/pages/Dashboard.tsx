@@ -186,12 +186,6 @@ export const Dashboard = () => {
     signalRService.chatConnection?.invoke("SendMessage", selectedChat, inputValue, "Text")
       .catch(err => console.error(err));
       
-    setMessages(prev => [...prev, {
-      id: Math.random().toString(),
-      text: inputValue,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      incoming: false
-    }]);
     setInputValue('');
   };
 

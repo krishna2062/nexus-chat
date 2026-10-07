@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace Nexus.API.Hubs
 {
@@ -8,10 +10,12 @@ namespace Nexus.API.Hubs
     public class ChatHub : Hub
     {
         private readonly Nexus.Application.Interfaces.IMessageRepository _messageRepository;
+        private readonly Nexus.Infrastructure.Data.NexusDbContext _context;
 
-        public ChatHub(Nexus.Application.Interfaces.IMessageRepository messageRepository)
+        public ChatHub(Nexus.Application.Interfaces.IMessageRepository messageRepository, Nexus.Infrastructure.Data.NexusDbContext context)
         {
             _messageRepository = messageRepository;
+            _context = context;
         }
 
         public async Task SendMessage(string chatId, string message, string type)
@@ -29,18 +33,30 @@ namespace Nexus.API.Hubs
                     CreatedAt = System.DateTime.UtcNow
                 };
                 await _messageRepository.AddAsync(msg);
-            }
 
-            // Then broadcast to clients in the chat group
-            await Clients.Group(chatId).SendAsync("ReceiveMessage", new 
-            {
-                SenderId = Context.UserIdentifier,
-                ChatId = chatId,
-                Content = message,
-                Type = type,
-                CreatedAt = System.DateTime.UtcNow
-            });
-        }
+                // Fetch participants of the chat to send them the message directly via UserID
+                var chat = await _context.Chats
+                    .Include(c => c.Participants)
+                    .ThenInclude(p => p.User)
+                    .FirstOrDefaultAsync(c => c.Id == parsedChatId);
+
+                if (chat != null)
+                {
+                    var sender = await _context.Users.FindAsync(userId);
+                    var participantIds = chat.Participants.Select(p => p.UserId.ToString()).ToList();
+
+                    await Clients.Users(participantIds).SendAsync("ReceiveMessage", new 
+                    {
+                        Id = msg.Id.ToString(),
+                        SenderId = Context.UserIdentifier,
+                        SenderAvatar = sender?.AvatarUrl,
+                        ChatId = chatId,
+                        Content = message,
+                        Type = type,
+                        CreatedAt = System.DateTime.UtcNow
+                    });
+                }
+            }
 
         public async Task JoinChatGroup(string chatId)
         {
