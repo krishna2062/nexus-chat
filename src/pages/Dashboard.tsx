@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, Edit, Phone, Video, Info, Paperclip, Smile, Mic, Send, Image as ImageIcon, FileText, ChevronLeft, ChevronRight, BellOff, Star, MessageSquare, Bell, Check, X, Users } from 'lucide-react';
+import { Search, Edit, Phone, Video, Info, Paperclip, Smile, Mic, Send, ChevronLeft, MessageSquare, Bell, Check, X, Users } from 'lucide-react';
 import './Dashboard.css';
 import api from '../services/api';
 import { signalRService } from '../services/signalr';
 
 export const Dashboard = () => {
   const [chats, setChats] = useState<any[]>([]);
-  const [friends, setFriends] = useState<any[]>([]);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   
@@ -16,7 +15,6 @@ export const Dashboard = () => {
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [showContactInfo, setShowContactInfo] = useState(window.innerWidth >= 1024);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
-  const [sentFiles, setSentFiles] = useState<{name: string, url: string, size: number, type: string}[]>([]);
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'groups' | 'archived'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -25,8 +23,6 @@ export const Dashboard = () => {
   const [activeCall, setActiveCall] = useState<{with: string, type: string, isIncoming: boolean, accepted: boolean} | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const localVideoRef = useRef<HTMLVideoElement>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const user = JSON.parse(localStorage.getItem('nexus_user') || '{}');
 
   const fetchChats = async () => {
@@ -92,7 +88,7 @@ export const Dashboard = () => {
         // Optional: show a toast notification here
       });
 
-      signalRService.chatConnection?.on("FriendRequestAccepted", (addressee) => {
+      signalRService.chatConnection?.on("FriendRequestAccepted", () => {
         fetchChats(); // Refresh chat list to show the new chat
         // Optional: show a toast notification here
       });
@@ -102,16 +98,16 @@ export const Dashboard = () => {
         setIncomingCall({ from: fromUser, type });
       });
 
-      signalRService.chatConnection?.on("CallAnswered", (byUser) => {
+      signalRService.chatConnection?.on("CallAnswered", () => {
         setActiveCall(prev => prev ? { ...prev, accepted: true } : null);
       });
 
-      signalRService.chatConnection?.on("CallRejected", (byUser) => {
+      signalRService.chatConnection?.on("CallRejected", () => {
         setActiveCall(null);
         alert("Call was rejected");
       });
 
-      signalRService.chatConnection?.on("CallEnded", (byUser) => {
+      signalRService.chatConnection?.on("CallEnded", () => {
         setActiveCall(null);
         setIncomingCall(null);
       });
@@ -167,7 +163,6 @@ export const Dashboard = () => {
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      setSentFiles(prev => [...prev, { name: file.name, url, size: file.size, type: file.type }]);
       // Here you would upload to backend, get URL and send as signalR message type "Image/Video/File"
       // Mocking for now:
       setMessages(prev => [...prev, {

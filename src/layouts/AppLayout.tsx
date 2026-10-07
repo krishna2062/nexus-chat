@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { MessageSquare, Phone, Users, Bell, Settings as SettingsIcon, Hexagon } from 'lucide-react';
+import { MessageSquare, Phone, Users, Bell, Settings as SettingsIcon } from 'lucide-react';
 import './AppLayout.css';
 import { useState, useEffect } from 'react';
 
