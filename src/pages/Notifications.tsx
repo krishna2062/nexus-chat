@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, Bell, Users } from 'lucide-react';
+import { ChevronLeft, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import './Dashboard.css';
