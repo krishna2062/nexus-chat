@@ -24,8 +24,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /out .
 
-# Expose port 80/8080 (Render uses PORT env variable)
-ENV ASPNETCORE_URLS=http://+:8080
+# Expose port 8080 (Render uses PORT env variable)
+ENV ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080
 
 ENTRYPOINT ["dotnet", "Nexus.API.dll"]

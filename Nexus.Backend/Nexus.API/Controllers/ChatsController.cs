@@ -41,8 +41,8 @@ namespace Nexus.API.Controllers
                     Name = c.IsGroup ? c.Name : c.Participants.First(p => p.UserId != currentUserId).User.FullName,
                     Avatar = c.IsGroup ? c.AvatarUrl : c.Participants.First(p => p.UserId != currentUserId).User.AvatarUrl,
                     IsOnline = !c.IsGroup && c.Participants.First(p => p.UserId != currentUserId).User.IsOnline,
-                    LastMessage = c.Messages.FirstOrDefault() != null ? c.Messages.FirstOrDefault().Content : "",
-                    Time = c.Messages.FirstOrDefault() != null ? c.Messages.FirstOrDefault().CreatedAt.ToString("o") : c.CreatedAt.ToString("o"),
+                    LastMessage = c.Messages.FirstOrDefault() != null ? c.Messages.FirstOrDefault()!.Content : "",
+                    Time = c.Messages.FirstOrDefault() != null ? c.Messages.FirstOrDefault()!.CreatedAt.ToString("o") : c.CreatedAt.ToString("o"),
                     Unread = c.Messages.Count(m => !m.IsRead && m.SenderId != currentUserId)
                 })
                 .ToListAsync();

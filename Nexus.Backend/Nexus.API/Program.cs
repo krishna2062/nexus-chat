@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Nexus.Application.Interfaces;
@@ -13,6 +14,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Suppress DataProtection warnings on Render (ephemeral container)
+builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
 
 // Database
 builder.Services.AddDbContext<NexusDbContext>(options =>
@@ -46,7 +50,7 @@ builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
-        b => b.WithOrigins("http://localhost:5173", "http://localhost:3000") // Frontend URLs
+        b => b.SetIsOriginAllowed(origin => true) // Allow any frontend origin (like Vercel)
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials());
@@ -61,7 +65,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// HttpsRedirection removed because Render handles HTTPS termination
 
 app.UseCors("AllowAll");
 
